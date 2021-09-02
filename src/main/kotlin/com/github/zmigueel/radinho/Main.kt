@@ -5,11 +5,8 @@ import com.github.zmigueel.radinho.command.loadCommands
 import com.github.zmigueel.radinho.command.slashCommands
 import com.github.zmigueel.radinho.config.loadConfig
 import dev.kord.core.Kord
-import dev.kord.core.entity.interaction.CommandInteraction
 import dev.kord.core.event.gateway.ReadyEvent
-import dev.kord.core.event.interaction.ChatInputCommandCreateEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
-import dev.kord.core.event.interaction.InteractionCreateEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intents
 import dev.kord.gateway.PrivilegedIntent

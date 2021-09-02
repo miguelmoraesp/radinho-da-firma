@@ -27,7 +27,6 @@ class TrackScheduler(val player: Player): AudioEventAdapter() {
     }
 
     override fun onTrackEnd(player: AudioPlayer?, track: AudioTrack?, endReason: AudioTrackEndReason?) {
-        println("jjjjjjjjjjjjjj")
         coroutineScope.launch {
             nextTrack()
         }

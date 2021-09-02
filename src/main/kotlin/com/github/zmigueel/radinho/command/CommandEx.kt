@@ -17,7 +17,7 @@ suspend fun ChatInputCommandInteraction.getGuild() =
 
 suspend fun command(name: String, description: String, action: suspend ChatInputCommandInteraction.() -> Unit) {
     slashCommands[name] = Command(name, description, action)
-    kord.createGuildChatInputCommand(Snowflake(839898721315061800), name, description)
+    kord.createGlobalChatInputCommand(name, description)
 }
 
 suspend fun command(
@@ -26,7 +26,7 @@ suspend fun command(
     action: suspend ChatInputCommandInteraction.() -> Unit
 ) {
     slashCommands[name] = Command(name, description, action)
-    kord.createGuildChatInputCommand(Snowflake(839898721315061800), name, description, builder)
+    kord.createGlobalChatInputCommand(name, description, builder)
 }
 
 suspend fun loadCommands() {

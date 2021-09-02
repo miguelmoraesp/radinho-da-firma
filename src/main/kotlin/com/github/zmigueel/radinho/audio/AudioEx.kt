@@ -3,17 +3,17 @@ package com.github.zmigueel.radinho.audio
 import com.github.zmigueel.radinho.kord
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
+import dev.kord.common.entity.ButtonStyle
 import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.behavior.channel.MessageChannelBehavior
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.interaction.followUp
+import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.SelectMenuInteractionCreateEvent
 import dev.kord.core.on
 import dev.kord.rest.builder.message.create.actionRow
 import dev.kord.rest.builder.message.create.embed
-import kotlinx.coroutines.delay
-import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
 val players = mutableMapOf<GuildBehavior, Player>()
@@ -24,11 +24,12 @@ fun TrackScheduler.queue(track: AudioTrack?) {
     }
 }
 
-fun TrackScheduler.nextTrack() {
-    println("VC TA FUNCIONANDO?????????????????????????????????????????????????????????")
+suspend fun TrackScheduler.nextTrack() {
     val track = queue.poll()
 
     player.startTrack(track, false)
+
+    nowPlayingMessage?.delete()
 }
 
 @OptIn(ExperimentalTime::class)
@@ -41,11 +42,17 @@ suspend fun onSearch(user: UserBehavior, player: Player, tracks: List<AudioTrack
         actionRow {
             selectMenu("on-select") {
                 this.placeholder = "Seleciona"
-                for (i in 1..5) {
-                    val track = tracks[i]
+                for (i in 1..15) {
+                    val track = tracks.getOrNull(i) ?: continue
 
                     option(track.info.title, track.identifier)
                 }
+            }
+        }
+
+        actionRow {
+            interactionButton(ButtonStyle.Danger, "cancel") {
+                this.label = "Cancelar"
             }
         }
     }
@@ -65,6 +72,13 @@ suspend fun onSearch(user: UserBehavior, player: Player, tracks: List<AudioTrack
                 }
             }
         player.scheduler.queue(first)
+    }
+
+    kord.on<ButtonInteractionCreateEvent> {
+        if (this.interaction.user != user) return@on
+        this.interaction.acknowledgePublicDeferredMessageUpdate()
+
+        message.delete()
     }
 }
 

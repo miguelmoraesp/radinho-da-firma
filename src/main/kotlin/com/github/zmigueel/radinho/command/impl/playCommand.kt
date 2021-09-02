@@ -18,15 +18,13 @@ suspend fun playCommand() = command("play", "música", {
         required = true
     }
 }) {
-    val response = this.acknowledgeEphemeral()
-
     val guild = this.getGuild()
     val member = this.user.asMember(guild?.id!!)
 
-    val voiceChannelId = member.getVoiceState().channelId
+    val voiceChannelId = member.getVoiceStateOrNull()?.channelId
     if (voiceChannelId == null) {
-        response.followUpEphemeral {
-            content = "canal burro"
+        this.acknowledgeEphemeral().followUpEphemeral {
+            content = "Você precisa estar em um canal de voz."
         }
         return@command
     }
@@ -53,7 +51,5 @@ suspend fun playCommand() = command("play", "música", {
 
     musicManager.loadAndPlay(this.user, player, input, this.channel)
 
-    response.followUpEphemeral {
-        content = "ta indo"
-    }
+
 }

@@ -8,19 +8,12 @@ import java.io.File
 
 @Serializable
 data class Config(
-    val discord: Discord,
-    val lavalink: Lavalink
+    val discord: Discord
 ) {
     @Serializable
     data class Discord(
         val token: String,
         val ownerId: String
-    )
-
-    @Serializable
-    data class Lavalink(
-        val nodes: List<String>,
-        val password: String
     )
 }
 

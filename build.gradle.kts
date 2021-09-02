@@ -1,11 +1,18 @@
 plugins {
     kotlin("jvm") version "1.5.21"
-    kotlin("kapt") version "1.5.30"
     kotlin("plugin.serialization") version "1.5.21"
+
+    id("com.github.johnrengelman.shadow") version "7.0.0"
+
+    application
 }
 
 group = "com.github.zmigueel"
 version = "1.0-SNAPSHOT"
+
+application {
+    mainClass.set("com.github.zmigueel.radinho.MainKt")
+}
 
 repositories {
     mavenCentral()
