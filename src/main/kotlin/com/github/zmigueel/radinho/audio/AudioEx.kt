@@ -1,37 +1,76 @@
 package com.github.zmigueel.radinho.audio
 
-import com.github.zmigueel.radinho.lavaKord
-import dev.schlaubi.lavakord.audio.player.Player
-import dev.schlaubi.lavakord.audio.player.Track
-import dev.schlaubi.lavakord.rest.TrackResponse
-import net.dv8tion.jda.api.entities.TextChannel
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
-import java.util.concurrent.ConcurrentLinkedQueue
+import com.github.zmigueel.radinho.kord
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack
+import dev.kord.core.behavior.GuildBehavior
+import dev.kord.core.behavior.UserBehavior
+import dev.kord.core.behavior.channel.MessageChannelBehavior
+import dev.kord.core.behavior.channel.createMessage
+import dev.kord.core.behavior.interaction.followUp
+import dev.kord.core.event.interaction.SelectMenuInteractionCreateEvent
+import dev.kord.core.on
+import dev.kord.rest.builder.message.create.actionRow
+import dev.kord.rest.builder.message.create.embed
+import kotlinx.coroutines.delay
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
-var Player.channel: TextChannel?
-    get() = null
-    set(value) {}
+val players = mutableMapOf<GuildBehavior, Player>()
 
-val Player.queue
-    get() = ConcurrentLinkedQueue<Track>()
-
-val SlashCommandEvent.link
-    get() = lavaKord.getLink(this.guild?.id!!)
-
-val SlashCommandEvent.player
-    get() = link.player
-
-suspend fun Player.queue(track: TrackResponse.PartialTrack?) {
-    if (playingTrack == null) {
-        playTrack(track?.toTrack()!!)
-        return
+fun TrackScheduler.queue(track: AudioTrack?) {
+    if (!player.startTrack(track!!, true)) {
+        queue.offer(track)
     }
-
-    queue.offer(track?.toTrack()!!)
 }
 
-suspend fun Player.nextTrack() {
-    val next = queue.poll() ?: return
+fun TrackScheduler.nextTrack() {
+    println("VC TA FUNCIONANDO?????????????????????????????????????????????????????????")
+    val track = queue.poll()
 
-    playTrack(next)
+    player.startTrack(track, false)
+}
+
+@OptIn(ExperimentalTime::class)
+suspend fun onSearch(user: UserBehavior, player: Player, tracks: List<AudioTrack>, channel: MessageChannelBehavior) {
+    val message = channel.createMessage {
+        embed {
+            title = "cu"
+        }
+
+        actionRow {
+            selectMenu("on-select") {
+                this.placeholder = "Seleciona"
+                for (i in 1..5) {
+                    val track = tracks[i]
+
+                    option(track.info.title, track.identifier)
+                }
+            }
+        }
+    }
+
+    kord.on<SelectMenuInteractionCreateEvent> {
+        if (this.interaction.user != user) return@on
+        val identifier = this.interaction.values.first()
+
+        val first = tracks.first { it.identifier == identifier }
+
+        message.delete()
+
+        this.interaction.acknowledgePublic()
+            .followUp {
+                embed {
+                    title = "${first.info.title} adicionada na fila"
+                }
+            }
+        player.scheduler.queue(first)
+    }
+}
+
+fun AudioPlayerManager.createPlayer(guild: GuildBehavior, channel: MessageChannelBehavior): Player {
+    val player = Player(createPlayer(), channel)
+    players[guild] = player
+
+    return player
 }

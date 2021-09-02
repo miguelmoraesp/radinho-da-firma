@@ -1,55 +1,35 @@
 package com.github.zmigueel.radinho.command
 
 import com.github.zmigueel.radinho.command.impl.playCommand
+import com.github.zmigueel.radinho.command.impl.skipCommand
 import com.github.zmigueel.radinho.coroutineScope
-import com.github.zmigueel.radinho.jda
-import kotlinx.coroutines.launch
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
-import net.dv8tion.jda.api.hooks.ListenerAdapter
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
-import java.util.concurrent.ConcurrentHashMap
+import com.github.zmigueel.radinho.kord
+import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.ChatInputCommandBehavior
+import dev.kord.core.entity.interaction.ChatInputCommandInteraction
+import dev.kord.rest.builder.interaction.ChatInputCreateBuilder
+import kotlinx.coroutines.async
 
-val slashCommands = ConcurrentHashMap<String, CustomCommand>()
+val slashCommands = mutableMapOf<String, Command>()
 
-suspend fun command(
-    name: String, description: String,
-    data: CommandData.() -> Unit,
-    action: suspend SlashCommandEvent.() -> Unit
-) {
-    val command = CustomCommand(
-        CommandData(name, description).also(data),
-        action
-    )
-    slashCommands[name] = command
+suspend fun ChatInputCommandInteraction.getGuild() =
+    kord.getGuild(this.data.guildId.value!!)
 
-    jda.upsertCommand(command.data).queue()
+suspend fun command(name: String, description: String, action: suspend ChatInputCommandInteraction.() -> Unit) {
+    slashCommands[name] = Command(name, description, action)
+    kord.createGuildChatInputCommand(Snowflake(839898721315061800), name, description)
 }
 
 suspend fun command(
     name: String, description: String,
-    action: suspend SlashCommandEvent.() -> Unit
+    builder: ChatInputCreateBuilder.() -> Unit,
+    action: suspend ChatInputCommandInteraction.() -> Unit
 ) {
-    val command = CustomCommand(
-        CommandData(name, description),
-        action
-    )
-    slashCommands[name] = command
-
-    jda.upsertCommand(command.data).queue()
+    slashCommands[name] = Command(name, description, action)
+    kord.createGuildChatInputCommand(Snowflake(839898721315061800), name, description, builder)
 }
 
 suspend fun loadCommands() {
     playCommand()
-}
-
-object CommandListener: ListenerAdapter() {
-    override fun onSlashCommand(event: SlashCommandEvent) {
-        if (event.guild == null) return
-
-        val command = slashCommands[event.name] ?: return
-
-        coroutineScope.launch {
-            command.action.invoke(event)
-        }
-    }
+    skipCommand()
 }

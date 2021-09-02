@@ -1,44 +1,53 @@
 package com.github.zmigueel.radinho
 
-import com.github.zmigueel.radinho.command.CommandListener
-import com.github.zmigueel.radinho.command.command
+import com.github.zmigueel.radinho.audio.RadioMusicManager
 import com.github.zmigueel.radinho.command.loadCommands
+import com.github.zmigueel.radinho.command.slashCommands
 import com.github.zmigueel.radinho.config.loadConfig
-import dev.schlaubi.lavakord.LavaKord
-import dev.schlaubi.lavakord.jda.buildWithLavakord
+import dev.kord.core.Kord
+import dev.kord.core.entity.interaction.CommandInteraction
+import dev.kord.core.event.gateway.ReadyEvent
+import dev.kord.core.event.interaction.ChatInputCommandCreateEvent
+import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
+import dev.kord.core.event.interaction.InteractionCreateEvent
+import dev.kord.core.on
+import dev.kord.gateway.Intents
+import dev.kord.gateway.PrivilegedIntent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
-import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.JDABuilder
-import net.dv8tion.jda.api.requests.GatewayIntent
 import java.util.concurrent.Executors
 
-lateinit var jda: JDA
-lateinit var lavaKord: LavaKord
+lateinit var kord: Kord
 
 val config by lazy {
     loadConfig()
 }
 
+val musicManager = RadioMusicManager()
+
 val coroutineScope = CoroutineScope(
     Executors.newCachedThreadPool().asCoroutineDispatcher()
 )
 
+@OptIn(PrivilegedIntent::class)
 suspend fun main() {
-    val build = JDABuilder.createDefault(config.discord.token)
-        .enableIntents(
-            GatewayIntent.GUILD_MEMBERS,
-            GatewayIntent.GUILD_PRESENCES
-        )
-        .addEventListeners(CommandListener)
-        .buildWithLavakord(coroutineScope.coroutineContext)
+    kord = Kord(config.discord.token) {
+        intents = Intents.all
+    }
 
-    jda = build.jda
-    lavaKord = build.lavakord
+    kord.on<ReadyEvent> {
+        println("evento")
+    }
 
-    config.lavalink.nodes.forEach {
-        lavaKord.addNode(it, config.lavalink.password)
+    kord.on<ChatInputCommandInteractionCreateEvent> {
+        val command = slashCommands[interaction.name] ?: return@on
+
+        command.action.invoke(interaction)
     }
 
     loadCommands()
+
+    kord.login {
+        playing("sim")
+    }
 }
