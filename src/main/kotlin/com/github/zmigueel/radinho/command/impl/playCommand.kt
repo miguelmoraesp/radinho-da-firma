@@ -4,12 +4,11 @@ import com.github.zmigueel.radinho.audio.*
 import com.github.zmigueel.radinho.command.command
 import com.github.zmigueel.radinho.command.getGuild
 import com.github.zmigueel.radinho.musicManager
+import com.github.zmigueel.radinho.util.getGuildEmoji
 import dev.kord.core.behavior.interaction.followUp
 import dev.kord.core.behavior.interaction.followUpEphemeral
 import dev.kord.core.entity.channel.VoiceChannel
-import dev.kord.core.entity.interaction.boolean
 import dev.kord.core.entity.interaction.string
-import dev.kord.rest.builder.interaction.boolean
 import dev.kord.rest.builder.interaction.string
 import dev.kord.voice.AudioFrame
 import kotlin.time.ExperimentalTime
@@ -26,7 +25,7 @@ suspend fun playCommand() = command("play", "Inicie uma música para tocar no ca
     val voiceChannelId = member.getVoiceStateOrNull()?.channelId
     if (voiceChannelId == null) {
         this.acknowledgeEphemeral().followUpEphemeral {
-            content = "Você precisa estar em um canal de voz."
+            content = "${getGuildEmoji("error")} | Você precisa estar em um canal de voz."
         }
         return@command
     }
@@ -35,7 +34,8 @@ suspend fun playCommand() = command("play", "Inicie uma música para tocar no ca
     val player = players[guild] ?: musicManager.playerManager.createPlayer(guild, this.channel)
     val self = kord.getSelf().asMember(guild.id)
 
-    if (self.getVoiceStateOrNull()?.channelId == null) {
+    val selfChannelId = self.getVoiceStateOrNull()?.channelId
+    if (selfChannelId == null) {
         voiceChannel?.connect {
             selfDeaf = true
             audioProvider {
@@ -52,7 +52,7 @@ suspend fun playCommand() = command("play", "Inicie uma música para tocar no ca
     }
 
     val message = this.acknowledgePublic().followUp {
-        content = "Procurando..."
+        content = "${getGuildEmoji("loading")} | Procurando resultados para: `$input`..."
     }
 
     musicManager.loadAndPlay(message, this.user, player, input)

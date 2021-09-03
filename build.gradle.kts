@@ -26,6 +26,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:1.5.21")
 
     implementation("dev.kord:kord-core:0.8.0-M5")
+    implementation("dev.kord.x:emoji:0.5.0")
     implementation("com.sedmelluq:lavaplayer:1.3.77")
 
     implementation("com.typesafe:config:1.4.1")

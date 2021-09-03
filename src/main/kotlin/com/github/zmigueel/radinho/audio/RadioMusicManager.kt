@@ -1,6 +1,7 @@
 package com.github.zmigueel.radinho.audio
 
 import com.github.zmigueel.radinho.coroutineScope
+import com.github.zmigueel.radinho.util.getGuildEmoji
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
@@ -46,7 +47,7 @@ class RadioMusicManager {
             override fun trackLoaded(track: AudioTrack?) {
                 coroutineScope.launch {
                     message.edit {
-                        content = "Adicionado na fila: ${track?.info?.title}."
+                        content = "${getGuildEmoji("music_notes")} | Adicionado na fila: `${track?.info?.title}`."
                     }
 
                     player.scheduler.queue(track!!)
@@ -65,7 +66,7 @@ class RadioMusicManager {
 
                     playlist.tracks.forEach { player.scheduler.queue(it) }
                     message.edit {
-                        content = "Foi adicionado ${playlist.tracks.size} da playlist ${playlist.name}."
+                        content = "${getGuildEmoji("music_notes")} | Foi adicionado `${playlist.tracks.size}` músicas da playlist `${playlist.name}`."
                     }
                 }
             }
@@ -73,7 +74,7 @@ class RadioMusicManager {
             override fun noMatches() {
                 coroutineScope.launch {
                     message.edit {
-                        content = "Não encontrei nenhum resultado para: `$search`."
+                        content = "${getGuildEmoji("error")} | Não encontrei nenhum resultado para: `$search`."
                     }
                 }
             }
@@ -81,7 +82,7 @@ class RadioMusicManager {
             override fun loadFailed(exception: FriendlyException?) {
                 coroutineScope.launch {
                     message.edit {
-                        content = "Houve uma falha ao buscar por sua música."
+                        content = "${getGuildEmoji("error")} | Houve uma falha ao buscar sua música."
                     }
                 }
             }

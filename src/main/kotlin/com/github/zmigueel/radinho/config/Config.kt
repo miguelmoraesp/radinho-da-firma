@@ -13,7 +13,9 @@ data class Config(
     @Serializable
     data class Discord(
         val token: String,
-        val ownerId: String
+        val ownerId: String,
+
+        val emojiGuild: String
     )
 }
 
