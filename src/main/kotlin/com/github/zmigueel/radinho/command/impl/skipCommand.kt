@@ -1,22 +1,21 @@
 package com.github.zmigueel.radinho.command.impl
 
-import com.github.zmigueel.radinho.audio.nextTrack
 import com.github.zmigueel.radinho.audio.players
 import com.github.zmigueel.radinho.command.command
 import com.github.zmigueel.radinho.command.getGuild
 import dev.kord.core.behavior.interaction.followUp
 import dev.kord.core.behavior.interaction.followUpEphemeral
 
-suspend fun skipCommand() = command("skip", "pula musica") {
+suspend fun skipCommand() = command("skip", "Vá para a próxima música da fila.") {
     val guild = this.getGuild() ?: return@command
 
     val player = players[guild]
         ?: return@command this.acknowledgeEphemeral().followUpEphemeral {
-            content = "Não estou tocando nada, dá /play burro"
+            content = "Não estou tocando nada no momento."
         }.let {}
 
-    player.stopTrack()
     this.acknowledgePublic().followUp {
-        content = "pulo"
+        content = "Indo para a próxima música..."
     }
+    player.stopTrack()
 }

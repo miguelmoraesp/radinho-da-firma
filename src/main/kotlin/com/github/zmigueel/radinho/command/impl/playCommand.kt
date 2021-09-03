@@ -4,17 +4,19 @@ import com.github.zmigueel.radinho.audio.*
 import com.github.zmigueel.radinho.command.command
 import com.github.zmigueel.radinho.command.getGuild
 import com.github.zmigueel.radinho.musicManager
+import dev.kord.core.behavior.interaction.followUp
 import dev.kord.core.behavior.interaction.followUpEphemeral
-import dev.kord.core.entity.channel.TextChannel
 import dev.kord.core.entity.channel.VoiceChannel
+import dev.kord.core.entity.interaction.boolean
 import dev.kord.core.entity.interaction.string
+import dev.kord.rest.builder.interaction.boolean
 import dev.kord.rest.builder.interaction.string
 import dev.kord.voice.AudioFrame
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class, dev.kord.common.annotation.KordVoice::class)
-suspend fun playCommand() = command("play", "música", {
-    string("input", "nome da musica") {
+suspend fun playCommand() = command("play", "Inicie uma música para tocar no canal de voz.", {
+    string("input", "Nome da música.") {
         required = true
     }
 }) {
@@ -49,7 +51,9 @@ suspend fun playCommand() = command("play", "música", {
         "ytsearch:$option"
     }
 
-    musicManager.loadAndPlay(this.user, player, input, this.channel)
+    val message = this.acknowledgePublic().followUp {
+        content = "Procurando..."
+    }
 
-
+    musicManager.loadAndPlay(message, this.user, player, input)
 }

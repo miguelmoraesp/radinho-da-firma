@@ -7,13 +7,12 @@ import dev.kord.common.entity.ButtonStyle
 import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.behavior.channel.MessageChannelBehavior
-import dev.kord.core.behavior.channel.createMessage
-import dev.kord.core.behavior.interaction.followUp
+import dev.kord.core.behavior.interaction.edit
+import dev.kord.core.entity.interaction.PublicFollowupMessage
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.SelectMenuInteractionCreateEvent
 import dev.kord.core.on
-import dev.kord.rest.builder.message.create.actionRow
-import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.builder.message.modify.actionRow
 import kotlin.time.ExperimentalTime
 
 val players = mutableMapOf<GuildBehavior, Player>()
@@ -33,16 +32,19 @@ suspend fun TrackScheduler.nextTrack() {
 }
 
 @OptIn(ExperimentalTime::class)
-suspend fun onSearch(user: UserBehavior, player: Player, tracks: List<AudioTrack>, channel: MessageChannelBehavior) {
-    val message = channel.createMessage {
-        embed {
-            title = "cu"
-        }
+suspend fun onSearch(
+    message: PublicFollowupMessage,
+    user: UserBehavior,
+    player: Player,
+    tracks: List<AudioTrack>
+) {
+    message.edit {
+        content = "Encontrei alguns resultados, escolha-o abaixo ou clique no botão para cancelar."
 
         actionRow {
             selectMenu("on-select") {
-                this.placeholder = "Seleciona"
-                for (i in 1..15) {
+                this.placeholder = "Selecione sua música"
+                for (i in 0..9) {
                     val track = tracks.getOrNull(i) ?: continue
 
                     option(track.info.title, track.identifier)
@@ -63,14 +65,10 @@ suspend fun onSearch(user: UserBehavior, player: Player, tracks: List<AudioTrack
 
         val first = tracks.first { it.identifier == identifier }
 
-        message.delete()
-
-        this.interaction.acknowledgePublic()
-            .followUp {
-                embed {
-                    title = "${first.info.title} adicionada na fila"
-                }
-            }
+        message.edit {
+            components = mutableListOf()
+            content = "Adicionado na fila: ${first.info.title}."
+        }
         player.scheduler.queue(first)
     }
 
