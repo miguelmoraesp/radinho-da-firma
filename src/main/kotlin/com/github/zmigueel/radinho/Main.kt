@@ -44,6 +44,8 @@ suspend fun main() {
 
     loadCommands()
 
+    println("boa noite")
+
     kord.login {
         playing("sim")
     }

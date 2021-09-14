@@ -15,7 +15,8 @@ data class Config(
         val token: String,
         val ownerId: String,
 
-        val emojiGuild: String
+        val emojiGuild: String,
+        val guildId: String
     )
 }
 

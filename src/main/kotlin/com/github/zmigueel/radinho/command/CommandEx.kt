@@ -2,6 +2,8 @@ package com.github.zmigueel.radinho.command
 
 import com.github.zmigueel.radinho.command.impl.playCommand
 import com.github.zmigueel.radinho.command.impl.skipCommand
+import com.github.zmigueel.radinho.command.impl.youtuberTogetherCommand
+import com.github.zmigueel.radinho.config
 import com.github.zmigueel.radinho.coroutineScope
 import com.github.zmigueel.radinho.kord
 import dev.kord.common.entity.Snowflake
@@ -17,7 +19,7 @@ suspend fun ChatInputCommandInteraction.getGuild() =
 
 suspend fun command(name: String, description: String, action: suspend ChatInputCommandInteraction.() -> Unit) {
     slashCommands[name] = Command(name, description, action)
-    kord.createGlobalChatInputCommand(name, description)
+    kord.createGuildChatInputCommand(Snowflake(config.discord.guildId), name, description)
 }
 
 suspend fun command(
@@ -26,10 +28,11 @@ suspend fun command(
     action: suspend ChatInputCommandInteraction.() -> Unit
 ) {
     slashCommands[name] = Command(name, description, action)
-    kord.createGlobalChatInputCommand(name, description, builder)
+    kord.createGuildChatInputCommand(Snowflake(config.discord.guildId), name, description, builder)
 }
 
 suspend fun loadCommands() {
     playCommand()
     skipCommand()
+    youtuberTogetherCommand()
 }

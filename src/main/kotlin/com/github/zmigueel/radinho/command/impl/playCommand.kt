@@ -36,7 +36,7 @@ suspend fun playCommand() = command("play", "Inicie uma música para tocar no ca
 
     val selfChannelId = self.getVoiceStateOrNull()?.channelId
     if (selfChannelId == null) {
-        voiceChannel?.connect {
+        player.connection = voiceChannel?.connect {
             selfDeaf = true
             audioProvider {
                 AudioFrame.fromData(player.provide()?.data)
@@ -52,7 +52,7 @@ suspend fun playCommand() = command("play", "Inicie uma música para tocar no ca
     }
 
     val message = this.acknowledgePublic().followUp {
-        content = "${getGuildEmoji("loading")} | Procurando resultados para: `$input`..."
+        content = "${getGuildEmoji("loading")} | Procurando resultados para: `$option`..."
     }
 
     musicManager.loadAndPlay(message, this.user, player, input)

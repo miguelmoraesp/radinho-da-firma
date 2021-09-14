@@ -1,5 +1,6 @@
 package com.github.zmigueel.radinho.audio
 
+import com.github.zmigueel.radinho.coroutineScope
 import com.github.zmigueel.radinho.kord
 import com.github.zmigueel.radinho.util.getGuildEmoji
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
@@ -9,13 +10,17 @@ import dev.kord.common.entity.DiscordPartialEmoji
 import dev.kord.core.behavior.GuildBehavior
 import dev.kord.core.behavior.UserBehavior
 import dev.kord.core.behavior.channel.MessageChannelBehavior
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.interaction.edit
+import dev.kord.core.entity.channel.VoiceChannel
 import dev.kord.core.entity.interaction.PublicFollowupMessage
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.SelectMenuInteractionCreateEvent
 import dev.kord.core.on
 import dev.kord.rest.builder.message.modify.actionRow
 import dev.kord.x.emoji.Emojis
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.time.ExperimentalTime
 
 val players = mutableMapOf<GuildBehavior, Player>()
@@ -40,11 +45,24 @@ fun TrackScheduler.queue(track: AudioTrack?) {
 }
 
 suspend fun TrackScheduler.nextTrack() {
+    nowPlayingMessage?.delete()
+
     val track = queue.poll()
+    if (track == null) {
+        player.leaveTask = coroutineScope.launch {
+            delay(120000)
+            if (player.playingTrack != null) return@launch
+
+            this@nextTrack.player.channel.createMessage {
+                content = "\uD83D\uDE34 | A música acabou..."
+            }
+
+            this@nextTrack.player.destroy()
+        }
+        return
+    }
 
     player.startTrack(track, false)
-
-    nowPlayingMessage?.delete()
 }
 
 @OptIn(ExperimentalTime::class)
