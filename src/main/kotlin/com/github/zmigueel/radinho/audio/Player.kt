@@ -24,7 +24,7 @@ data class Player(val audioPlayer: AudioPlayer, val channel: MessageChannelBehav
         scheduler.queue.clear()
 
         coroutineScope.launch {
-            connection?.disconnect()
+            connection?.leave()
             val textChannel = this@Player.channel.asChannel() as TextChannel
 
             players.remove(textChannel.guild)
