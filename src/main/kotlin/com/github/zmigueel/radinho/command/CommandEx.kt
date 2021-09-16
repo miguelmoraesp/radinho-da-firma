@@ -2,7 +2,6 @@ package com.github.zmigueel.radinho.command
 
 import com.github.zmigueel.radinho.command.impl.playCommand
 import com.github.zmigueel.radinho.command.impl.skipCommand
-import com.github.zmigueel.radinho.command.impl.youtuberTogetherCommand
 import com.github.zmigueel.radinho.config
 import com.github.zmigueel.radinho.coroutineScope
 import com.github.zmigueel.radinho.kord
@@ -34,5 +33,4 @@ suspend fun command(
 suspend fun loadCommands() {
     playCommand()
     skipCommand()
-    youtuberTogetherCommand()
 }
